@@ -18,7 +18,7 @@ class BatchProcessor:
         self.pdf_processor = PDFProcessor()
         self.error_log = []
     
-    def process_folder(self, src_folder, dst_folder, excel_path, password):
+    def process_folder(self, src_folder, dst_folder, excel_path, password, header_text=None):
         """
         批量处理文件夹中的PDF文件
         
@@ -27,6 +27,7 @@ class BatchProcessor:
             dst_folder (str): 目标文件夹路径
             excel_path (str): Excel文件路径（包含稿件编号和方向信息）
             password (str): PDF加密密码
+            header_text (str): 页眉文本
         """
         try:
             # 创建目标文件夹
@@ -64,7 +65,7 @@ class BatchProcessor:
                         
                         # 处理PDF
                         self.pdf_processor.add_headers_and_footers(
-                            src_pdf, dst_pdf, paper_info, password
+                            src_pdf, dst_pdf, paper_info, password, header_text
                         )
                         
                         print(f"✓ 成功处理: {src_file}")
@@ -80,11 +81,11 @@ class BatchProcessor:
             
             # 保存错误日志
             if self.error_log:
-                self._save_error_log()
+                self._save_error_log(dst_folder)
             
             print(f"\n批处理完成！成功处理 {len(src_files) - len(self.error_log)} 个文件")
             if self.error_log:
-                print(f"处理失败 {len(self.error_log)} 个文件，详见 error_log.txt")
+                print(f"处理失败 {len(self.error_log)} 个文件，详见错误日志文件夹")
                 
         except Exception as e:
             print(f"批处理过程中出现错误: {str(e)}")
@@ -114,12 +115,23 @@ class BatchProcessor:
         except Exception as e:
             raise Exception(f"读取Excel文件失败: {str(e)}")
     
-    def _save_error_log(self):
+    def _save_error_log(self, dst_folder):
         """保存错误日志到文件"""
         try:
-            with open('error_log.txt', 'w', encoding='utf-8') as f:
+            # 创建错误日志文件夹路径
+            error_log_dir = dst_folder + '-error_log'
+            
+            # 如果文件夹不存在则创建
+            if not os.path.exists(error_log_dir):
+                os.makedirs(error_log_dir)
+            
+            # 错误日志文件路径
+            error_log_path = os.path.join(error_log_dir, 'error_log.txt')
+            
+            # 写入错误日志
+            with open(error_log_path, 'w', encoding='utf-8') as f:
                 for error in self.error_log:
                     f.write(error + '\n')
-            print("错误日志已保存到 error_log.txt")
+            print(f"错误日志已保存到 {error_log_path}")
         except Exception as e:
             print(f"保存错误日志失败: {str(e)}")

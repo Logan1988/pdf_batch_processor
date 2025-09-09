@@ -38,7 +38,7 @@ class PDFProcessorGUI:
         """将窗口居中显示"""
         self.root.update_idletasks()
         width = 700
-        height = 600
+        height = 800
         x = (self.root.winfo_screenwidth() // 2) - (width // 2)
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
@@ -89,6 +89,14 @@ class PDFProcessorGUI:
         
         # 密码输入
         self.create_password_section(main_container)
+        
+        # 页眉文本输入
+        self.create_text_input(
+            main_container,
+            "页眉文本：", 
+            "header_text", 
+            "中国企业管理案例与质性研究论坛(2021)候审稿件"
+        )
         
         # 处理按钮
         process_btn = tk.Button(
@@ -196,6 +204,27 @@ class PDFProcessorGUI:
                         width=60)
         entry.pack(fill='x')
     
+    def create_text_input(self, parent, label_text, var_name, default_value):
+        """创建文本输入组件"""
+        # 主框架
+        section_frame = tk.Frame(parent, bg='#1e1e1e')
+        section_frame.pack(fill='x', pady=15)
+        
+        # 标签
+        label = tk.Label(section_frame, text=label_text, 
+                        font=("Arial", 12, "bold"), 
+                        bg='#1e1e1e', fg='#ffffff',
+                        anchor="w")
+        label.pack(fill='x', pady=(0, 5))
+        
+        # 文本输入框
+        setattr(self, f"{var_name}_var", tk.StringVar(value=default_value))
+        entry = tk.Entry(section_frame, textvariable=getattr(self, f"{var_name}_var"), 
+                        font=("Arial", 11), bg='#2d2d2d', fg='#ffffff', 
+                        insertbackground='#ffffff', relief="sunken", bd=2,
+                        width=60)
+        entry.pack(fill='x')
+    
     def browse_folder(self, var_name, title):
         """浏览文件夹"""
         folder_path = filedialog.askdirectory(title=title)
@@ -215,6 +244,7 @@ class PDFProcessorGUI:
         dst_folder = self.dst_folder_var.get().strip()
         excel_file = self.excel_file_var.get().strip()
         password = self.password_var.get().strip()
+        header_text = self.header_text_var.get().strip()
         
         # 验证输入
         if not all([src_folder, dst_folder, excel_file, password]):
@@ -235,7 +265,7 @@ class PDFProcessorGUI:
         
         try:
             # 开始批处理
-            self.batch_processor.process_folder(src_folder, dst_folder, excel_file, password)
+            self.batch_processor.process_folder(src_folder, dst_folder, excel_file, password, header_text)
             
             # 处理完成
             self.status_label.config(text="✅ 处理完成！", fg="#4CAF50")

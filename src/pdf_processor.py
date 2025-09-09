@@ -35,7 +35,7 @@ class PDFProcessor:
             except:
                 print("警告: 无法加载中文字体，可能出现中文显示问题")
     
-    def add_headers_and_footers(self, src_pdf, dst_pdf, paper_info, password):
+    def add_headers_and_footers(self, src_pdf, dst_pdf, paper_info, password, header_text=None):
         """
         为PDF添加页眉页脚并加密
         
@@ -44,6 +44,7 @@ class PDFProcessor:
             dst_pdf (str): 目标PDF文件路径
             paper_info (tuple): 稿件信息 (稿件编号, 研究方向)
             password (str): PDF加密密码
+            header_text (str): 页眉文本，如果为None则使用默认值
         """
         try:
             # 读取已有的PDF
@@ -59,7 +60,7 @@ class PDFProcessor:
                 
                 # 创建临时PDF文件
                 temp_file = 'temp.pdf'
-                self._create_page_overlay(temp_file, paper_info, i + 1)
+                self._create_page_overlay(temp_file, paper_info, i + 1, header_text)
                 
                 # 合并页面
                 new_pdf = PdfFileReader(temp_file)
@@ -69,8 +70,14 @@ class PDFProcessor:
                 # 删除临时文件
                 os.remove(temp_file)
             
-            # 加密PDF   只允许打印，不允许复制和修改
-            output_writer.encrypt(user_pwd='', owner_pwd=password,permissions_flag=4)
+            # 设置PDF权限和加密
+            # 允许打印，不允许复制和修改
+            output_writer.encrypt(
+                user_pwd='',  # 用户密码为空，任何人都可以打开
+                owner_pwd=password,  # 所有者密码
+                use_128bit=True,  # 使用128位加密
+                permissions_flag=4  # 只允许打印，不允许复制和修改
+            )
             
             # 输出处理后的PDF
             with open(dst_pdf, 'wb') as output_stream:
@@ -79,7 +86,7 @@ class PDFProcessor:
         except Exception as e:
             raise Exception(f"处理PDF文件时出错: {str(e)}")
     
-    def _create_page_overlay(self, temp_file, paper_info, page_num):
+    def _create_page_overlay(self, temp_file, paper_info, page_num, header_text=None):
         """
         创建页面覆盖层，包含页眉页脚
         
@@ -87,6 +94,7 @@ class PDFProcessor:
             temp_file (str): 临时文件路径
             paper_info (tuple): 稿件信息 (稿件编号, 研究方向)
             page_num (int): 页码
+            header_text (str): 页眉文本，如果为None则使用默认值
         """
         # 设置画布
         c = canvas.Canvas(temp_file, pagesize=A4)
@@ -101,8 +109,11 @@ class PDFProcessor:
         c.setFillColor('black')
         c.setFont('song', 8)
         
+        # 使用传入的页眉文本或默认值
+        header_text_to_use = header_text if header_text else '中国企业管理案例与质性研究论坛(2021)候审稿件'
+        
         # 添加页眉内容
-        c.drawString(72, 816, '中国企业管理案例与质性研究论坛(2021)候审稿件')
+        c.drawString(72, 816, header_text_to_use)
         c.drawString(72, 806, f'稿件编号：{paper_info[0]}')
         
         # 添加研究方向（右对齐）
