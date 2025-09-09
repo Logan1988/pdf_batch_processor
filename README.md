@@ -33,7 +33,7 @@ pdf_processor/
 
 ## 环境要求
 
-- Python 3.8+
+- Python 3.11
 - 推荐使用conda环境：`conda activate pdf`
 
 ## 安装和使用
@@ -104,7 +104,7 @@ Excel文件应包含两列：
 
 ## 技术栈
 
-- Python 3.8+
+- Python 3.11
 - PyPDF2 - PDF文件处理
 - ReportLab - PDF生成和编辑
 - Pandas - Excel文件处理
