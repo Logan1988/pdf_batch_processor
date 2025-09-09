@@ -30,7 +30,7 @@ jobs:
     
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed --name "PDFBatchProcessor" main.py
+        pyinstaller --onefile --windowed --name "PDFBatchProcessor" --add-data "STSONG.TTF:." --add-data "data:data" --add-data "config:config" main.py
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
